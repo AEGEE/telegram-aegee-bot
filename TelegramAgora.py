@@ -1,5 +1,5 @@
 import telegram
-from telegram import InlineQueryResultArticle, InlineQueryResultCachedSticker
+from telegram import InlineQueryResultCachedSticker
 from telegram.error import NetworkError, Unauthorized
 from multiprocessing import Queue
 from time import sleep, time
@@ -9,7 +9,6 @@ import configparser
 import argparse
 from uuid import uuid4
 from xmlrpc.server import SimpleXMLRPCServer
-from xmlrpc.server import SimpleXMLRPCRequestHandler
 
 
 class Bot(threading.Thread):
@@ -47,6 +46,7 @@ class Bot(threading.Thread):
                 # The user has removed or blocked the bot.
                 update_id += 1
 
+            # Check messages from queue
             queueLock.acquire()
             if not self.q.empty():
                 data = self.q.get()
@@ -65,9 +65,9 @@ class Bot(threading.Thread):
     def serve(self, bot, update_id):
         for update in bot.getUpdates(offset=update_id, timeout=10):
             update_id = update.update_id + 1
-            if not update.message and not update.inline_query:  # weird Telegram update with only an update_id
+            if not update.message and not update.inline_query:  # weird Telegram update with only an update_id and no inline
                 continue
-            elif not update.message and update.inline_query:
+            elif not update.message and update.inline_query: # inline message
                 query = update.inline_query.query
                 offset = update.inline_query.offset
                 results = list()
@@ -94,15 +94,13 @@ class Bot(threading.Thread):
                     InlineQueryResultCachedSticker(id=uuid4(), sticker_file_id='BQADBAADYQADAtezAnyu634Jm1AVAg'))
                 bot.answerInlineQuery(update.inline_query.id, results=results, cache_time=3600)
                 continue
-            else:
-                continue
 
             chat_id = update.message.chat_id
             message = update.message.text
             cmd_message = update.message.text.lower()
 
             logger.warn('%d:%.3f:%s' % (chat_id, time(), message.replace('\n', ' ')))
-            logger.warn('file_id: %s' % (update.message.sticker.file_id))
+            #logger.warn('file_id: %s' % update.message.sticker.file_id)
 
             if update.inline_query:
                 print('inline query!')
@@ -152,7 +150,7 @@ class Bot(threading.Thread):
                             logger.warn('Recorded message %s' % self.gp_data[chat_id])
 
                             # Hide keyboard
-                            interface = telegram.ReplyKeyboardHide()
+                            interface = telegram.ReplyKeyboardHide(hide_keyboard=True)
                             bot.sendMessage(chat_id=chat_id, text='Message recorded, thanks', reply_markup=interface)
 
                         del self.gp_data[chat_id]
