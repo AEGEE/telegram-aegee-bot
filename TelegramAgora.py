@@ -16,6 +16,7 @@ class Bot(threading.Thread):
     gp_data = dict()
     run_flag = 1
     config = None
+    bot_name = None
 
     def __init__(self, q, config_obj):
         threading.Thread.__init__(self)
@@ -29,6 +30,9 @@ class Bot(threading.Thread):
 
         # Telegram Bot Authorization Token
         bot = telegram.Bot(self.config.get('bot', 'token'))
+
+        # Save bot name (this is the name given to BotFather for this token)
+        self.bot_name = bot.get_me().first_name
 
         # get the first pending update_id, this is so we can skip over it in case
         # we get an "Unauthorized" exception.
@@ -65,9 +69,9 @@ class Bot(threading.Thread):
     def serve(self, bot, update_id):
         for update in bot.getUpdates(offset=update_id, timeout=10):
             update_id = update.update_id + 1
-            if not update.message and not update.inline_query:  # weird Telegram update with only an update_id and no inline
+            if not update.message and not update.inline_query:  # weird Telegram update
                 continue
-            elif not update.message and update.inline_query: # inline message
+            elif not update.message and update.inline_query:  # inline message
                 query = update.inline_query.query
                 offset = update.inline_query.offset
                 results = list()
@@ -100,7 +104,7 @@ class Bot(threading.Thread):
             cmd_message = update.message.text.lower()
 
             logger.warn('%d:%.3f:%s' % (chat_id, time(), message.replace('\n', ' ')))
-            #logger.warn('file_id: %s' % update.message.sticker.file_id)
+            # logger.warn('file_id: %s' % update.message.sticker.file_id)
 
             if update.inline_query:
                 print('inline query!')
@@ -180,13 +184,16 @@ class Bot(threading.Thread):
 
 class XmlRPCServer(threading.Thread):
     run_flag = 1
+    config = None
 
-    def __init__(self, q, host, port):
+    def __init__(self, q, config_obj):
         threading.Thread.__init__(self)
         self.thread_name = 'XMLRPCServer'
         self.q = q
+        self.config = config_obj
 
-        self.server = SimpleXMLRPCServer((host, port), logRequests=True, allow_none=True)
+        self.server = SimpleXMLRPCServer((self.config.get('rpc-server', 'host'),
+                                          self.config.getint('rpc-server', 'port')), logRequests=True, allow_none=True)
         self.server.register_introspection_functions()
         self.server.register_function(self.shutdown)
         self.server.register_function(self.test)
@@ -219,13 +226,14 @@ logger = logging.getLogger(__name__)
 
 # argument parser
 parser = argparse.ArgumentParser()
-parser.add_argument("--config", help="Bot config file", required=True)
+parser.add_argument("--config", help="Bot config file", required=True)  # mandatory config file as parameter
 args = vars(parser.parse_args())
 
 # Read config file
 config = configparser.ConfigParser()
 config.read(args['config'])
 
+# Init queue and its lock
 queueLock = threading.Lock()
 workQueue = Queue(10)
 threads = []
@@ -237,7 +245,7 @@ def main():
     bot_thread.start()
 
     # Allocate and start XmlRPC server
-    xmlrpc_thread = XmlRPCServer(workQueue, config.get('rpc-server', 'host'), config.getint('rpc-server', 'port'))
+    xmlrpc_thread = XmlRPCServer(workQueue, config)
     xmlrpc_thread.start()
 
     # Append threads
