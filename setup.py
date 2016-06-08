@@ -1,5 +1,5 @@
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 import telegram_bot
 
@@ -12,26 +12,33 @@ import telegram_bot
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+
+def requirements():
+    requirements_list = []
+
+    with open('requirements.txt') as requirements:
+        for install in requirements:
+            requirements_list.append(install.strip())
+
+    return requirements_list
+
 setup(
     name="telegram_aegee_bot",
-    version=telegram_bot.__version__,
-    author=telegram_bot.__author__,
-    author_email=telegram_bot.__email__,
+    version="0.0.1",
+    author="Andrea Visinoni",
+    author_email="andrea.visinoni@gmail.com",
     description=("Telegram Bot for AEGEE, serves for events expecially Agoras"),
     license="Apache",
     keywords="telegram aegee bot agora events",
     url="https://github.com/AEGEE/telegram-aegee-bot",
-    packages=['telegram_bot', 'tests'],
+    packages=find_packages(exclude=['tests*']),
     long_description=read('README.md'),
-    install_requires=[
-        'python-telegram-bot',
-        'argparse',
-        'configparser'
-    ],
+    install_requires=requirements(),
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Topic :: Utilities",
         "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python :: 3.5",
     ],
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow

@@ -3,7 +3,10 @@ from telegram_bot import xml_rpc_server
 from multiprocessing import Queue
 import threading
 import logging
-import configparser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 import argparse
 
 # Logging init and level

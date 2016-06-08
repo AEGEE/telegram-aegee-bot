@@ -1,4 +1,7 @@
-from xmlrpc.server import SimpleXMLRPCServer
+try:
+    from xmlrpc.server import SimpleXMLRPCServer
+except ImportError:
+    import xmlrpclib
 import threading
 import logging
 
