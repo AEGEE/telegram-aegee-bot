@@ -1,1 +1,1 @@
-__all__ = ["bot_core", "main", "xml_rpc_server"]
+__all__ = ["bot_core", "main"]

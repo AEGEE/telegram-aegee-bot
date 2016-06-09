@@ -22,7 +22,7 @@ class XmlRPCServer(threading.Thread):
         self.lock = lock_obj
 
         self.server = SimpleXMLRPCServer((self.config.get('rpc-server', 'host'),
-                                          self.config.getint('rpc-server', 'port')), logRequests=True, allow_none=True)
+                                          self.config.getint('rpc-server', 'port')), logRequests=False, allow_none=True)
         self.server.register_introspection_functions()
         self.server.register_function(self.shutdown)
         self.server.register_function(self.test)

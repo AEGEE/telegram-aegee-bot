@@ -1,5 +1,5 @@
 from telegram_bot import bot_core
-from telegram_bot import xml_rpc_server
+from telegram_bot.xmlrpc_server import xml_rpc_server
 from multiprocessing import Queue
 import threading
 import logging
@@ -45,7 +45,7 @@ def main():
     for t in threads:
         t.join()
 
-    print('Exiting Main Thread')
+    logger.debug('Exiting Main Thread')
 
 if __name__ == '__main__':
     main()
