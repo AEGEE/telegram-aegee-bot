@@ -61,7 +61,7 @@ class Bot(threading.Thread):
                 elif data == 'test':
                     print('test')
                 else:
-                    print('unknown command')
+                    module_logger.debug('unknown command')
 
                 self.lock.release()
             else:
@@ -154,17 +154,24 @@ class Bot(threading.Thread):
             if chat_id < 0:
                 continue  # bot should not be in a group
 
+            # Detect commands
             if message.startswith('/'):
                 command = cmd_message[1:]
                 if command in ("start", "help"):
                     self.start_cmd(update)
                 elif command in 'location':
+                    location_send = False
                     for each_section in self.config.sections():
                         if each_section.startswith('location'):
                             self.bot.sendVenue(chat_id=chat_id, title=self.config.get(each_section, 'title'),
                                                address=self.config.get(each_section, 'address'),
                                                latitude=self.config.get(each_section, 'latitude'),
                                                longitude=self.config.get(each_section, 'longitude'))
+                            location_send = True
+
+                    # Handle no locations in config file
+                    if not location_send:
+                        self.bot.sendMessage(chat_id=chat_id, text='No location set')
 
                 elif command in 'gossip':
                     # process gossip command

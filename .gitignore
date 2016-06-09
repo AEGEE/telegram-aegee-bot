@@ -1,0 +1,9 @@
+# ignore files, IDE specific
+.idea/misc.xml
+.idea/modules.xml
+.idea/telegram-aegee-bot.iml
+.idea/workspace.xml
+.idea/vcs.xml
+
+# ignore testing configuration file
+telegram_bot/bot.cfg
