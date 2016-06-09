@@ -1,8 +1,4 @@
   # LICENCE
-
-Copyright 2016 Andrea Visinoni (AEGEE-Bergamo)  
-and contributors
-  
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -191,7 +187,7 @@ and contributors
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright {yyyy} {name of copyright owner}
+   Copyright 2016 Andrea Visinoni (AEGEE-Bergamo) and contributors
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
