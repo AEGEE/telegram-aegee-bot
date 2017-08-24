@@ -5,6 +5,7 @@ import threading
 import logging
 from time import sleep, time
 from uuid import uuid4
+from telegram_bot import db
 
 # create logger
 module_logger = logging.getLogger(__name__)
@@ -99,15 +100,28 @@ class Bot(threading.Thread):
             # clear previous remaining data for this chat_id
             self.gossip_clear(update.message.chat_id)
 
-            # set new dict entry for this chat_id
-            self.gp_data[update.message.chat_id] = None
+            # set new dict entry for this chat_id and set status
+            status = {'status' : 0}
+            self.gp_data[update.message.chat_id] = status
 
             # send message
             self.bot.sendMessage(chat_id=update.message.chat_id, text='Send me your gossip message now...')
         else:
-            if self.gp_data[update.message.chat_id] is None:
+            if self.gp_data[update.message.chat_id]['status'] == 0:
                 # set message
-                self.gp_data[update.message.chat_id] = update.message.text
+                msg = {'msg' : update.message.text}
+
+                self.gp_data[update.message.chat_id].update(msg)
+
+                self.gp_data[update.message.chat_id]['status'] = 1
+
+                self.bot.sendMessage(chat_id=update.message.chat_id, text='Set a name or leave blank for Anonymous')
+            elif self.gp_data[update.message.chat_id]['status'] == 1:
+                # set name
+                name = {'name': update.message.text}
+
+                self.gp_data[update.message.chat_id].update(name)
+                self.gp_data[update.message.chat_id]['status'] = 2
 
                 # show keyboard
                 interface = telegram.ReplyKeyboardMarkup([["Yes", "No"]], resize_keyboard=True,
@@ -117,6 +131,10 @@ class Bot(threading.Thread):
             else:
                 if update.message.text == 'Yes':
                     module_logger.debug('Recorded message %s' % self.gp_data[update.message.chat_id])
+
+                    # Save message to database
+                    my_db = db.DBConnection()
+                    my_db.insert_gossip(self.gp_data[update.message.chat_id]['name'], self.gp_data[update.message.chat_id]['msg'])
 
                     # Message recorded reply, keyboard is automatically set to default
                     self.bot.sendMessage(chat_id=update.message.chat_id, text='Message recorded, thanks')

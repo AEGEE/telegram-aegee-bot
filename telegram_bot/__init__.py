@@ -1,1 +1,1 @@
-__all__ = ["bot_core", "main"]
+__all__ = ["bot_core", "main", "db"]
