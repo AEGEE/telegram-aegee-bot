@@ -141,7 +141,15 @@ class Bot(threading.Thread):
 
             chat_id = update.message.chat_id
             message = update.message.text
-            cmd_message = update.message.text.lower()
+
+            # handle receiving sticker messages, TODO: record new stickers?
+            if not update.message.text and update.message.sticker:
+                module_logger.debug('Sticker received')
+                continue
+
+            # lowercase and prepare cmd message only if text is present
+            if update.message.text:
+                cmd_message = update.message.text.lower()
 
             module_logger.debug('%d:%.3f:%s' % (chat_id, time(), message.replace('\n', ' ')))
             # logger.warn('file_id: %s' % update.message.sticker.file_id)
