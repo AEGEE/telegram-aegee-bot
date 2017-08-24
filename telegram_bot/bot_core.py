@@ -118,10 +118,8 @@ class Bot(threading.Thread):
                 if update.message.text == 'Yes':
                     module_logger.debug('Recorded message %s' % self.gp_data[update.message.chat_id])
 
-                    # Hide keyboard
-                    interface = telegram.ReplyKeyboardHide(hide_keyboard=True)
-                    self.bot.sendMessage(chat_id=update.message.chat_id, text='Message recorded, thanks',
-                                         reply_markup=interface)
+                    # Message recorded reply, keyboard is automatically set to default
+                    self.bot.sendMessage(chat_id=update.message.chat_id, text='Message recorded, thanks')
 
                 # remove dict entry for chat_id
                 del self.gp_data[update.message.chat_id]
